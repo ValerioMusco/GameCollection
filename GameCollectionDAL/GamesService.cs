@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 namespace GameCollectionDAL {
     public class GamesService {
 
-        private readonly string _connectionString = "Data Source=DESKTOP-95QLTBL;Initial Catalog=GameCollectionDB; Integrated Security=True;"; 
+        private readonly string _connectionString = "Data Source=DESKTOP-95QLTBL;Initial Catalog=GameCollectionDB; Integrated Security=True;";
 
         public void Create(Game game, List<Category> categories) {
 
@@ -39,28 +40,24 @@ namespace GameCollectionDAL {
 
             List<string> list = new();
 
-            using(SqlConnection cnx = new( _connectionString ) ) { 
-            
-                using(SqlCommand cmd = cnx.CreateCommand() ) {
+            using SqlConnection cnx = new( _connectionString );
 
-                    cmd.CommandType = System.Data.CommandType.StoredProcedure;
-                    cmd.CommandText = "GetGame";
-                    
-                    cmd.Parameters.AddWithValue( "@gameCategory", category );
+            using SqlCommand cmd = cnx.CreateCommand();
 
-                    cnx.Open();
-                    using( SqlDataReader r = cmd.ExecuteReader() ) {
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            cmd.CommandText = "GetGame";
 
-                        while(r.Read()) {
+            cmd.Parameters.AddWithValue( "@gameCategory", category );
 
-                            list.Add( (string)r["Title"] );
-                        }
-                    }
-                    cnx.Close();
+            cnx.Open();
+            using( SqlDataReader r = cmd.ExecuteReader() ) {
 
-                    return list;
-                }
+                while( r.Read() )
+                    list.Add( (string)r["Title"] );
             }
+            cnx.Close();
+
+            return list;
         }
 
         public Dictionary<string, List<string>> ShowByCategory() {
